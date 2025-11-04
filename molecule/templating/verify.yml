@@ -1,0 +1,105 @@
+---
+- name: Verify templating
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data
+
+  tasks:
+    - name: Check templated extensions are present
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/{{ item }}"
+      register: extension_check
+      failed_when: not extension_check.stat.exists
+      loop:
+        - lab_switcher
+        - toolmsg
+
+    # Verify lab_switcher templating
+    - name: Read lab_switcher script.js
+      slurp:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/lab_switcher/script.js"
+      register: lab_switcher_script
+
+    - name: Decode lab_switcher script content
+      set_fact:
+        lab_switcher_content: "{{ lab_switcher_script.content | b64decode }}"
+
+    - name: Verify lab_switcher contains base domain
+      assert:
+        that:
+          - "'test.galaxy.org' in lab_switcher_content"
+        fail_msg: "Base domain not found in lab_switcher script"
+
+    - name: Verify lab_switcher contains visible labs
+      assert:
+        that:
+          - "'Main Lab' in lab_switcher_content"
+          - "'Proteomics Lab' in lab_switcher_content"
+          - "'Genomics Lab' in lab_switcher_content"
+        fail_msg: "Expected labs not found in lab_switcher script"
+
+    - name: Verify lab_switcher does not contain hidden labs
+      assert:
+        that:
+          - "'Secret Lab' not in lab_switcher_content"
+        fail_msg: "Hidden lab found in lab_switcher script (should be excluded)"
+
+    - name: Verify lab_switcher contains subdomain URLs
+      assert:
+        that:
+          - "'https://main.test.galaxy.org' in lab_switcher_content"
+          - "'https://proteomics.test.galaxy.org' in lab_switcher_content"
+        fail_msg: "Expected subdomain URLs not found in lab_switcher script"
+
+    # Verify toolmsg templating
+    - name: Read toolmsg script.js
+      slurp:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/toolmsg/script.js"
+      register: toolmsg_script
+
+    - name: Decode toolmsg script content
+      set_fact:
+        toolmsg_content: "{{ toolmsg_script.content | b64decode }}"
+
+    - name: Verify toolmsg contains all tool messages
+      assert:
+        that:
+          - "'toolshed.g2.bx.psu.edu/repos/galaxyp/diann/diann' in toolmsg_content"
+          - "'Access rights to this tool have changed' in toolmsg_content"
+          - "'warning' in toolmsg_content"
+        fail_msg: "Expected tool messages not found in toolmsg script"
+
+    - name: Verify toolmsg contains multiple messages
+      assert:
+        that:
+          - "'fastp' in toolmsg_content"
+          - "'deprecated' in toolmsg_content"
+          - "'upload1' in toolmsg_content"
+          - "'Maximum upload size' in toolmsg_content"
+        fail_msg: "Not all tool messages were templated correctly"
+
+    - name: Verify toolmsg contains message classes
+      assert:
+        that:
+          - "'danger' in toolmsg_content"
+          - "'info' in toolmsg_content"
+        fail_msg: "Message classes not found in toolmsg script"
+
+    # Verify non-template files were copied correctly
+    - name: Check config files exist
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/{{ item }}/config.yml"
+      register: config_check
+      failed_when: not config_check.stat.exists
+      loop:
+        - lab_switcher
+        - toolmsg
+
+    - name: Check CSS files exist
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/{{ item }}/styles.css"
+      register: css_check
+      failed_when: not css_check.stat.exists
+      loop:
+        - lab_switcher
+        - toolmsg

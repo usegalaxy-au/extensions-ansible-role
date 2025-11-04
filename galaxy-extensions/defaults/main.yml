@@ -1,7 +1,8 @@
+---
 galaxy_version: "{{ __galaxy_major_version | default('latest') }}"
 galaxy_extensions_dir: '{{ galaxy_mutable_data_dir }}/webhooks'
 galaxy_extensions_enabled: []
-  # - example_extension_id
+# - example_extension_id
 
 # These extensions will be ignored by the role
 galaxy_default_extensions:

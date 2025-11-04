@@ -1,0 +1,22 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data
+    galaxy_extensions_enabled:
+      - name: tips
+      - name: search
+      - name: tool_list
+    galaxy_version: "24.1"
+
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == 'Debian'
+
+  tasks:
+    - name: Include galaxy-extensions role
+      include_role:
+        name: galaxy-extensions

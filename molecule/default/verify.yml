@@ -1,0 +1,84 @@
+---
+- name: Verify
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data
+    galaxy_extensions_enabled:
+      - name: tips
+      - name: search
+      - name: tool_list
+    galaxy_version: "24.1"
+
+  tasks:
+    - name: Check extensions directory exists
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks"
+      register: ext_dir
+      failed_when: not ext_dir.stat.exists
+
+    - name: Check extensions directory has correct permissions
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks"
+      register: ext_dir_stat
+      failed_when: >
+        ext_dir_stat.stat.mode != '0755'
+
+    - name: Check enabled extensions are present
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/{{ item.name }}"
+      register: extension_check
+      failed_when: not extension_check.stat.exists
+      loop: "{{ galaxy_extensions_enabled }}"
+
+    - name: Verify extension files exist (check for config.yml)
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/{{ item.name }}/config.yml"
+      register: config_check
+      failed_when: not config_check.stat.exists
+      loop: "{{ galaxy_extensions_enabled }}"
+
+    - name: Check default extensions are NOT removed
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks/{{ item }}"
+      register: default_check
+      failed_when: default_check.stat.exists
+      loop:
+        - demo
+        - gtn
+        - news
+
+    - name: List all installed extensions
+      shell: ls -1 {{ galaxy_mutable_data_dir }}/webhooks
+      register: installed_extensions
+      changed_when: false
+
+    - name: Debug installed extensions
+      debug:
+        var: installed_extensions.stdout_lines
+
+    - name: Verify only expected extensions are installed
+      assert:
+        that:
+          - installed_extensions.stdout_lines | length == (galaxy_extensions_enabled | length)
+        fail_msg: "Unexpected extensions found in webhooks directory"
+
+    # Idempotency test
+    - name: Run role again (idempotency check)
+      include_role:
+        name: galaxy-extensions
+
+    - name: Verify idempotency - directory should not change
+      stat:
+        path: "{{ galaxy_mutable_data_dir }}/webhooks"
+      register: second_check
+
+    - name: Re-list installed extensions after second run
+      shell: ls -1 {{ galaxy_mutable_data_dir }}/webhooks
+      register: installed_extensions_second
+      changed_when: false
+
+    - name: Verify extensions are the same after second run
+      assert:
+        that:
+          - installed_extensions.stdout_lines == installed_extensions_second.stdout_lines
+        fail_msg: "Extensions changed on second run - role is not idempotent"

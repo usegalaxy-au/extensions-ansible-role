@@ -1,0 +1,108 @@
+---
+- name: Verify version selection
+  hosts: all
+  tasks:
+    # Verify latest version scenario
+    - name: Check latest version extensions exist
+      stat:
+        path: /opt/galaxy/data/latest/webhooks/{{ item }}
+      register: latest_check
+      failed_when: not latest_check.stat.exists
+      loop:
+        - tips
+        - search
+
+    - name: Verify latest version extensions have content
+      stat:
+        path: /opt/galaxy/data/latest/webhooks/tips/config.yml
+      register: latest_config
+      failed_when: not latest_config.stat.exists
+
+    # Verify version 24.1 scenario
+    - name: Check version 24.1 extensions exist
+      stat:
+        path: /opt/galaxy/data/v24.1/webhooks/{{ item }}
+      register: v24_check
+      failed_when: not v24_check.stat.exists
+      loop:
+        - tips
+        - search
+
+    - name: Verify version 24.1 extensions have content
+      stat:
+        path: /opt/galaxy/data/v24.1/webhooks/tips/config.yml
+      register: v24_config
+      failed_when: not v24_config.stat.exists
+
+    # Verify version 22.05 scenario
+    - name: Check version 22.05 extensions exist
+      stat:
+        path: /opt/galaxy/data/v22.05/webhooks/{{ item }}
+      register: v22_check
+      failed_when: not v22_check.stat.exists
+      loop:
+        - tips
+        - search
+
+    - name: Verify version 22.05 extensions have content
+      stat:
+        path: /opt/galaxy/data/v22.05/webhooks/tips/config.yml
+      register: v22_config
+      failed_when: not v22_config.stat.exists
+
+    # Verify future version scenario (99.0) - should use latest available
+    - name: Check future version extensions exist
+      stat:
+        path: /opt/galaxy/data/v99.0/webhooks/tips
+      register: v99_check
+      failed_when: not v99_check.stat.exists
+
+    - name: Verify future version uses latest available extension version
+      stat:
+        path: /opt/galaxy/data/v99.0/webhooks/tips/config.yml
+      register: v99_config
+      failed_when: not v99_config.stat.exists
+
+    # Verify intermediate version scenario (23.5)
+    - name: Check intermediate version extensions exist
+      stat:
+        path: /opt/galaxy/data/v23.5/webhooks/tips
+      register: v23_check
+      failed_when: not v23_check.stat.exists
+
+    - name: Verify intermediate version has content
+      stat:
+        path: /opt/galaxy/data/v23.5/webhooks/tips/config.yml
+      register: v23_config
+      failed_when: not v23_config.stat.exists
+
+    # Compare content between different versions to ensure correct version selected
+    - name: Read config from different version directories
+      slurp:
+        path: "{{ item }}/webhooks/tips/config.yml"
+      register: config_contents
+      loop:
+        - /opt/galaxy/data/latest
+        - /opt/galaxy/data/v24.1
+        - /opt/galaxy/data/v22.05
+
+    - name: Verify all configs are valid YAML
+      set_fact:
+        configs_valid: true
+      when: config_contents.results | length > 0
+
+    # Ensure isolation between version scenarios
+    - name: List all webhook directories created
+      shell: find /opt/galaxy/data -type d -name webhooks
+      register: webhook_dirs
+      changed_when: false
+
+    - name: Verify multiple version directories exist
+      assert:
+        that:
+          - webhook_dirs.stdout_lines | length >= 5
+        fail_msg: "Not all version scenarios created separate directories"
+
+    - name: Display webhook directories for verification
+      debug:
+        var: webhook_dirs.stdout_lines

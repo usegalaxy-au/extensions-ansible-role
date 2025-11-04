@@ -63,7 +63,8 @@ def get_available_versions(path):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            input=dict(type='str', required=True),
+            paths=dict(type='list', required=True),
+            galaxy_version=dict(type='str', required=True),
         )
     )
     result = select_extension_versions(

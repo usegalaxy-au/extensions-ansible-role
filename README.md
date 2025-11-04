@@ -31,3 +31,39 @@ Any extension can be templated by adding a .j2 extension to the file name. Any
 variables available in the running playbook can be used, but defaults should be
 set in defaults/extensions.yml to ensure predictable results, and document the
 variables being used for users of the Ansible role.
+
+
+## Testing
+
+This role includes comprehensive tests:
+
+- **Unit tests** - Test the custom Ansible module logic
+- **Integration tests** - Test the full role execution using Molecule
+- **Linting** - YAML and Ansible best practices
+
+### Quick Start
+
+```bash
+# Install test dependencies
+pip install -r requirements-test.txt
+
+# Run all tests
+make test
+
+# Run specific test types
+make test-unit        # Unit tests only
+make test-molecule    # Integration tests only
+make lint            # Linting only
+```
+
+See [TESTING.md](TESTING.md) for detailed testing documentation.
+
+### Test Scenarios
+
+- **default** - Basic functionality and idempotency
+- **templating** - Jinja2 template variable rendering
+- **versions** - Galaxy version selection logic
+
+### CI/CD
+
+Tests run automatically via GitHub Actions on push and pull requests.

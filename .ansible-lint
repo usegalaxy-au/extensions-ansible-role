@@ -1,0 +1,30 @@
+---
+profile: production
+
+exclude_paths:
+  - .git/
+  - .github/
+  - .cache/
+  - molecule/
+  - __pycache__/
+  - '*.pyc'
+
+# Enable checking of loop variable prefixes
+loop_var_prefix: "^(__|{role}_)"
+
+# Mock modules or roles to avoid warnings
+mock_modules:
+  - select_extension_versions
+
+# Skip specific rules if needed
+skip_list:
+  - role-name  # Allow hyphenated role names
+  - galaxy[no-changelog]  # We may not have a changelog yet
+
+warn_list:
+  - experimental  # Warn on experimental features
+  - no-changed-when  # Warn when tasks don't set changed_when
+  - command-instead-of-module  # Prefer modules over commands
+
+# Use offline mode for faster linting
+offline: false

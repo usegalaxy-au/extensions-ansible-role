@@ -1,0 +1,75 @@
+---
+- name: Test with latest version
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data/latest
+    galaxy_extensions_enabled:
+      - name: tips
+      - name: search
+    galaxy_version: "latest"
+
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == 'Debian'
+
+  tasks:
+    - name: Include galaxy-extensions role with latest version
+      include_role:
+        name: galaxy-extensions
+
+- name: Test with specific version 24.1
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data/v24.1
+    galaxy_extensions_enabled:
+      - name: tips
+      - name: search
+    galaxy_version: "24.1"
+
+  tasks:
+    - name: Include galaxy-extensions role with version 24.1
+      include_role:
+        name: galaxy-extensions
+
+- name: Test with older version 22.05
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data/v22.05
+    galaxy_extensions_enabled:
+      - name: tips
+      - name: search
+    galaxy_version: "22.05"
+
+  tasks:
+    - name: Include galaxy-extensions role with version 22.05
+      include_role:
+        name: galaxy-extensions
+
+- name: Test with future version (should use latest available)
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data/v99.0
+    galaxy_extensions_enabled:
+      - name: tips
+    galaxy_version: "99.0"
+
+  tasks:
+    - name: Include galaxy-extensions role with future version
+      include_role:
+        name: galaxy-extensions
+
+- name: Test with intermediate version (should select compatible version)
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data/v23.5
+    galaxy_extensions_enabled:
+      - name: tips
+    galaxy_version: "23.5"
+
+  tasks:
+    - name: Include galaxy-extensions role with intermediate version
+      include_role:
+        name: galaxy-extensions

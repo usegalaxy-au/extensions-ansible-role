@@ -1,0 +1,49 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    galaxy_mutable_data_dir: /opt/galaxy/data
+    galaxy_extensions_enabled:
+      - name: lab_switcher
+      - name: toolmsg
+    galaxy_version: "24.2"
+
+    # Template variables for lab_switcher
+    galaxy_subsite_base_domain: "test.galaxy.org"
+    galaxy_subsites:
+      - name: main
+        brand: "Main Lab"
+        hidden: false
+      - name: proteomics
+        brand: "Proteomics Lab"
+        hidden: false
+      - name: genomics
+        brand: "Genomics Lab"
+        hidden: false
+      - name: secret
+        brand: "Secret Lab"
+        hidden: true
+
+    # Template variables for toolmsg
+    toolmsg_messages:
+      - tool_id: "toolshed.g2.bx.psu.edu/repos/galaxyp/diann/diann"
+        message: "Access rights to this tool have changed, please apply for access"
+        class: "warning"
+      - tool_id: "toolshed.g2.bx.psu.edu/repos/iuc/fastp/fastp"
+        message: "This tool is deprecated, please use fastp2 instead"
+        class: "danger"
+      - tool_id: "upload1"
+        message: "Maximum upload size is 50GB"
+        class: "info"
+
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == 'Debian'
+
+  tasks:
+    - name: Include galaxy-extensions role
+      include_role:
+        name: galaxy-extensions
