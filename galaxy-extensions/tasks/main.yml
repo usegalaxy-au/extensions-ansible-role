@@ -16,19 +16,11 @@
       ] }}
   loop: "{{ galaxy_extensions_enabled }}"
 
-- name: Discover Python interpreter on localhost
-  ansible.builtin.raw: which python3
-  delegate_to: localhost
-  register: python_path
-  changed_when: false
-
 - name: Select appropriate version for each extension based on Galaxy version
   select_extension_versions:
     paths: "{{ extension_paths }}"
     galaxy_version: "{{ galaxy_version }}"
   delegate_to: localhost
-  vars:
-    ansible_python_interpreter: "{{ python_path.stdout | trim }}"
   register: extension_version_paths_result
 
 - name: Extract version paths from module result
