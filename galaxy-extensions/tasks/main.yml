@@ -16,6 +16,8 @@
       ] }}
   loop: "{{ galaxy_extensions_enabled }}"
   delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
 - name: Select appropriate version for each extension based on Galaxy version
   select_extension_versions:
@@ -23,6 +25,8 @@
     galaxy_version: "{{ galaxy_version }}"
   register: extension_version_paths_result
   delegate_to: localhost
+  vars:
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
 
 - name: Extract version paths from module result
   ansible.builtin.set_fact:
