@@ -1,8 +1,8 @@
 ---
 - name: Set extension variables
   ansible.builtin.set_fact:
-    extension_name: "{{ extension_item.0.name }}"
-    dest_dir: "{{ galaxy_extensions_dir }}/{{ extension_item.0.name }}"
+    extension_name: "{{ extension_item.0 }}"
+    dest_dir: "{{ galaxy_extensions_dir }}/{{ extension_item.0 }}"
     extension_path: "{{ extension_item.1 }}"
 
 - name: Ensure extension subdirectory exists

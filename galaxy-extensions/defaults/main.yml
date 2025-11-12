@@ -1,14 +1,19 @@
 ---
-galaxy_version: "{{ __galaxy_major_version | default('latest') }}"
+
+galaxy_version: "{{ __galaxy_major_version | default('latest') }}"  # Must be in the form "\d+.\d+"
 galaxy_extensions_dir: '{{ galaxy_mutable_data_dir }}/webhooks'
-galaxy_extensions_enabled: []
+galaxy_extensions_enabled: []  # Extension IDs (see templates/extensions)
 # - example_extension_id
 
 # Base path for extension templates (can be overridden for testing)
 galaxy_extensions_base_path: "{{ role_path }}"
 
-# These extensions will be ignored by the role
+# The extensions listed here will not be modified by the role
 galaxy_default_extensions:
   - demo
   - gtn
   - news
+
+# Owner and group for extension directories
+galaxy_extensions_owner: root
+galaxy_extensions_group: root

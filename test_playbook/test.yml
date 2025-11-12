@@ -1,0 +1,24 @@
+---
+
+# Run with `ansible-playbook -i localhost, test.yml --connection=local`
+
+- hosts: localhost
+  gather_facts: false
+  roles:
+    - role: ../galaxy-extensions
+  vars:
+    galaxy_version: 24.2
+    galaxy_extensions_dir: /home/cameron/dev/galaxy/galaxy/config/plugins/webhooks
+    galaxy_extensions_owner: cameron
+    galaxy_extensions_group: cameron
+    galaxy_extensions_enabled:
+      - lab_switcher
+      - phdcomics
+    galaxy_base_domain: example.com
+    galaxy_labs:
+    - name: example          # Should be the domain name
+      brand: "Example Lab"   # Display name
+      hidden: false
+    - name: example2          # Should be the domain name
+      brand: "Example Lab 2"   # Display name
+      hidden: false

@@ -1,10 +1,14 @@
 ---
+- name: Debug galaxy version
+  ansible.builtin.debug:
+    msg: "Installing extensions for Galaxy version {{ galaxy_version }}"
+
 - name: Ensure destination directory exists
   ansible.builtin.file:
     path: "{{ galaxy_extensions_dir }}"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ galaxy_extensions_owner }}"
+    group: "{{ galaxy_extensions_group }}"
     mode: '0755'
 
 - name: Collect paths of extensions to install
@@ -12,7 +16,7 @@
     extension_paths: >-
       {{ extension_paths | default([]) + [
         galaxy_extensions_base_path + '/templates/extensions/' +
-        item.name + '/'
+        item + '/'
       ] }}
   loop: "{{ galaxy_extensions_enabled }}"
 
@@ -43,5 +47,5 @@
     path: "{{ galaxy_extensions_dir }}/{{ item }}"
     state: absent
   with_items: "{{ existing_extension_dirs.stdout_lines }}"
-  when: "item not in ((galaxy_extensions_enabled | map(attribute='name') | list) + galaxy_default_extensions)"
+  when: "item not in (galaxy_extensions_enabled + galaxy_default_extensions)"
   notify: Restart Galaxy
