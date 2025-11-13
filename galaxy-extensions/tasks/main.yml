@@ -1,5 +1,5 @@
 ---
-- name: Debug galaxy version
+- name: Show galaxy version
   ansible.builtin.debug:
     msg: "Installing extensions for Galaxy version {{ galaxy_version }}"
 
@@ -17,17 +17,19 @@
   register: builtin_extension_check
   loop: "{{ galaxy_extensions_enabled }}"
 
+- name: Build list of third-party extensions (non-builtin)
+  ansible.builtin.set_fact:
+    galaxy_third_party_extensions_enabled: >-
+      {{ (builtin_extension_check.results | default([]))
+          | selectattr('stat.exists', 'equalto', False)
+          | map(attribute='item') | list }}
+
 - name: Collect paths of builtin extensions
   ansible.builtin.set_fact:
     galaxy_builtin_extension_paths: >-
       {{ galaxy_builtin_extension_paths | default([]) + [item.stat.path + '/'] }}
   loop: "{{ builtin_extension_check.results }}"
   when: item.stat.exists
-
-- name: debug builtin extension paths
-  ansible.builtin.debug:
-    msg: "Builtin extension path: {{ item }}"
-  loop: "{{ galaxy_builtin_extension_paths | default([]) }}"
 
 - name: Collect paths of extensions to install
   ansible.builtin.set_fact:
@@ -40,13 +42,10 @@
   when: not item.stat.exists
 
 - name: Install builtin extensions
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "{{ galaxy_extensions_dir }}/"
-    owner: "{{ galaxy_extensions_owner }}"
-    group: "{{ galaxy_extensions_group }}"
-    mode: '0755'
-    remote_src: true
+  ansible.builtin.shell:
+    cmd: |
+      cp -r "{{ item | regex_replace('/+$', '') }}" "{{ galaxy_extensions_dir }}/"
+      chown -R {{ galaxy_extensions_owner }}:{{ galaxy_extensions_group }} "{{ galaxy_extensions_dir }}/{{ item | basename }}"
   loop: "{{ galaxy_builtin_extension_paths | default([]) }}"
   notify: restart galaxy
 
@@ -63,7 +62,7 @@
 
 - name: Install each enabled extension
   ansible.builtin.include_tasks: install_extension.yml
-  loop: "{{ galaxy_extensions_enabled | zip(extension_version_paths) | list }}"
+  loop: "{{ galaxy_third_party_extensions_enabled | zip(extension_version_paths) | list }}"
   loop_control:
     loop_var: extension_item
 

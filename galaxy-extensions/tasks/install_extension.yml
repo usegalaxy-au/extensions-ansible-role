@@ -5,7 +5,7 @@
     dest_dir: "{{ galaxy_extensions_dir }}/{{ extension_item.0 }}"
     extension_path: "{{ extension_item.1 }}"
 
-- name: Debug extension installation path
+- name: Show extension installation path
   ansible.builtin.debug:
     msg: "Installing extension {{ extension_name }} to {{ dest_dir }} from {{ extension_path }}"
 
