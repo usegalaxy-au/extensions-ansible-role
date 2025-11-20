@@ -26,5 +26,4 @@ galaxy_info:
     - extensions
     - galaxyproject
 
-dependencies:
-  - galaxyproject.galaxy
+dependencies: []
