@@ -38,7 +38,7 @@ jobs:
 
       - name: Run ansible-lint
         run: |
-          ansible-lint galaxy-extensions/
+          ansible-lint .
 
   unit-tests:
     name: Unit Tests
@@ -62,7 +62,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          python -m pytest galaxy-extensions/tests/unit/ -v --cov=galaxy-extensions/library --cov-report=xml --cov-report=term
+          python -m pytest tests/unit/ -v --cov=library --cov-report=xml --cov-report=term
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
