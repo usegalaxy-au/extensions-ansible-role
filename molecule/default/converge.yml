@@ -3,10 +3,12 @@
   hosts: all
   vars:
     galaxy_mutable_data_dir: /opt/galaxy/data
+    galaxy_config_dir: /opt/galaxy/data
+    galaxy_server_dir: /opt/galaxy/server
     galaxy_extensions_enabled:
-      - name: tips
-      - name: search
-      - name: tool_list
+      - tips
+      - search
+      - tool_list
     galaxy_version: "24.1"
 
   pre_tasks:
@@ -20,3 +22,8 @@
     - name: Include extensions-ansible-role role
       include_role:
         name: extensions-ansible-role
+
+  handlers:
+    - name: restart galaxy
+      debug:
+        msg: "Galaxy would be restarted here"
