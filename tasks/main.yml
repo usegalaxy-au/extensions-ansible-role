@@ -7,6 +7,15 @@
   ansible.builtin.debug:
     msg: "Installing extensions for Galaxy version {{ galaxy_version }}"
 
+- name: Clone galaxy-extensions repository
+  ansible.builtin.git:
+    repo: "{{ galaxy_extensions_repo_url }}"
+    dest: "{{ galaxy_extensions_repo_dir }}"
+    version: "{{ galaxy_extensions_repo_version }}"
+    force: yes
+  delegate_to: localhost
+  run_once: true
+
 - name: Ensure destination directory exists
   ansible.builtin.file:
     path: "{{ galaxy_extensions_dir }}"
@@ -39,7 +48,7 @@
   ansible.builtin.set_fact:
     extension_paths: >-
       {{ extension_paths | default([]) + [
-        galaxy_extensions_base_path + '/templates/extensions/' +
+        galaxy_extensions_repo_dir + '/extensions/' +
         item.item + '/'
       ] }}
   loop: "{{ builtin_extension_check.results }}"
