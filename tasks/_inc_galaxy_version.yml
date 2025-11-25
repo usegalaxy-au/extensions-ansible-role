@@ -22,7 +22,6 @@
         }}
   when: __galaxy_version_file is not skipped
 
-- name: Debug Galaxy version
+- name: Show galaxy version
   ansible.builtin.debug:
-    msg: "Determined Galaxy version {{ galaxy_version }}"
-  when: galaxy_server_dir is defined
+    msg: "Installing extensions for Galaxy version {{ galaxy_version }}"
