@@ -4,14 +4,14 @@
   ansible.builtin.include_tasks: _inc_galaxy_version.yml
 
 - name: Clone galaxy-extensions repository
-  local_action:
-    module: ansible.builtin.git
+  ansible.builtin.git:
     repo: "{{ galaxy_extensions_repo_url }}"
     dest: "{{ galaxy_extensions_repo_dir }}"
     version: "{{ galaxy_extensions_repo_version }}"
-    update: yes
-    force: yes
-    accept_hostkey: yes
+    update: true
+    force: true
+    accept_hostkey: true
+  connection: local
   run_once: true
   environment:
     GIT_CONFIG_COUNT: "1"
@@ -67,10 +67,10 @@
   notify: restart galaxy
 
 - name: Select appropriate version for each extension based on Galaxy version
-  local_action:
-    module: select_extension_versions
+  select_extension_versions:
     paths: "{{ extension_paths }}"
     galaxy_version: "{{ galaxy_version }}"
+  connection: local
   register: extension_version_paths_result
 
 - name: Extract version paths from module result

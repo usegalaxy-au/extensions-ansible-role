@@ -2,7 +2,8 @@
 
 # Run with `ansible-playbook -i localhost, test.yml --connection=local`
 
-- hosts: localhost
+- name: Test galaxy-extensions role
+  hosts: localhost
   gather_facts: false
   roles:
     - role: ../galaxy-extensions
