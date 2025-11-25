@@ -16,10 +16,10 @@
     mode: '0755'
 
 - name: Find all files under extension path
-  ansible.builtin.find:
+  local_action:
+    module: ansible.builtin.find
     paths: "{{ extension_path }}"
     recurse: yes
-  delegate_to: localhost
   run_once: true
   register: found_files
 
